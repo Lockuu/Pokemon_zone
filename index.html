@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Comforting Pokémon Friends</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', 'Helvetica', sans-serif;
+      overflow: hidden;
+      background-color: #fcd5ce;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #ffc8dd, #ffafcc, #bde0fe, #a2d2ff);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .window {
+      background-color: rgba(255, 255, 255, 0.85);
+      border: 8px double #f582ae;
+      border-radius: 24px;
+      padding: 30px;
+      width: 90vw;
+      max-width: 700px;
+      height: 80vh;
+      max-height: 600px;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(245, 130, 174, 0.3);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      backdrop-filter: blur(5px);
+    }
+
+    .window::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      right: -15px;
+      bottom: -15px;
+      z-index: -1;
+      background: linear-gradient(45deg, #ffafcc, #ffc8dd, #a2d2ff, #bde0fe);
+      border-radius: 30px;
+      opacity: 0.6;
+      filter: blur(15px);
+      animation: borderGlow 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes borderGlow {
+      0% { opacity: 0.4; filter: blur(15px); }
+      100% { opacity: 0.8; filter: blur(8px); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    button {
+      margin: 12px;
+      padding: 14px 32px;
+      font-size: 1.2em;
+      background: linear-gradient(to right, #f582ae, #ff8fab);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(245, 130, 174, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 7px 15px rgba(245, 130, 174, 0.5);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.7);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%);
+      transform-origin: 50% 50%;
+    }
+
+    button:focus:not(:active)::after {
+      animation: ripple 1s ease-out;
+    }
+
+    @keyframes ripple {
+      0% { transform: scale(0, 0); opacity: 1; }
+      20% { transform: scale(25, 25); opacity: 0.8; }
+      100% { opacity: 0; transform: scale(40, 40); }
+    }
+
+    .mood-slider-container {
+      width: 80%;
+      max-width: 400px;
+      margin: 24px auto 12px;
+      position: relative;
+      text-align: center;
+    }
+
+    .mood-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 15px;
+      border-radius: 10px;
+      background: linear-gradient(to right, #ff8fab, #ffc8dd, #a2d2ff);
+      outline: none;
+      transition: opacity 0.2s;
+    }
+
+    .mood-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #f582ae;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      border: 3px solid white;
+      transition: all 0.3s;
+    }
+
+    .mood-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+    }
+
+    .mood-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    .mood-emoji {
+      font-size: 2em;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+
+    img.pokemon-avatar {
+      margin-top: 20px;
+      image-rendering: pixelated;
+      width: 140px;
+      height: auto;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 15px;
+      border: 4px solid #8bd3dd;
+      border-radius: 50%;
+      box-shadow: 0 5px 15px rgba(139, 211, 221, 0.4);
+      transition: all 0.5s;
+    }
+
+    img.pokemon-avatar:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    #quote-box {
+      font-size: 1.4em;
+      margin: 25px auto;
+      max-width: 600px;
+      background: rgba(255, 241, 230, 0.8);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      position: relative;
+      transition: all 0.5s;
+    }
+
+    #quote-box::before {
+      content: '"';
+      position: absolute;
+      top: -15px;
+      left: 10px;
+      font-size: 3em;
+      color: #f582ae;
+      opacity: 0.5;
+    }
+
+    #quote-box::after {
+      content: '"';
+      position: absolute;
+      bottom: -35px;
+      right: 10px;
+      font-size: 3em;
+      color: #f582ae;
+      opacity: 0.5;
+    }
+
+    #quote-box:hover {
+      transform: scale(1.02);
+    }
+
+    h1, h2 {
+      font-size: 2.4em;
+      margin-bottom: 20px;
+      color: #333;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after, h2::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 4px;
+      background: linear-gradient(to right, #ffafcc, #a2d2ff);
+      border-radius: 2px;
+    }
+
+    .pokemon-name {
+      font-weight: bold;
+      color: #f582ae;
+    }
+
+    .hearts {
+      position: absolute;
+      top: -100px;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      opacity: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff6b95' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      animation: floatHeart 4s ease-in infinite;
+    }
+
+    @keyframes floatHeart {
+      0% { transform: translateY(0) scale(0.8); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 0.8; }
+      100% { transform: translateY(-800px) scale(1.2) rotate(20deg); opacity: 0; }
+    }
+
+    .start-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    #welcome-message {
+      opacity: 0;
+      animation: welcomeFade 1.5s ease-in forwards 0.5s;
+    }
+
+    @keyframes welcomeFade {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #pet-animation {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E");
+      background-size: contain;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    .intro-text {
+      font-size: 1.1em;
+      margin: 0 auto 20px;
+      max-width: 500px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .mood-container {
+      background: rgba(255, 255, 255, 0.7);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      width: 80%;
+      max-width: 500px;
+    }
+
+    .button-primary {
+      background: linear-gradient(to right, #f582ae, #ff8fab) !important;
+    }
+
+    .button-secondary {
+      background: linear-gradient(to right, #8bd3dd, #a2d2ff) !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="hearts" id="hearts-container"></div>
+  <div id="pet-animation"></div>
+
+  <div class="window">
+    <div id="start-screen" class="fade-in">
+      <h1 id="welcome-message">Pokémon Comfort Zone</h1>
+      <p class="intro-text">Meet friendly Pokémon who have encouraging words just for you. Slide to select your mood and let's get started!</p>
+      
+      <div class="mood-container">
+        <div class="mood-slider-container">
+          <input type="range" min="1" max="5" value="3" class="mood-slider" id="mood-slider">
+          <div class="mood-labels">
+            <span>😢</span>
+            <span>😔</span>
+            <span>😐</span>
+            <span>🙂</span>
+            <span>😊</span>
+          </div>
+          <div class="mood-emoji" id="mood-emoji">😐</div>
+        </div>
+      </div>
+      
+      <div class="start-buttons">
+        <button onclick="showComfort()" class="button-primary">Get Encouragement</button>
+        <button onclick="showThanks()" class="button-secondary">Just Looking</button>
+      </div>
+    </div>
+
+    <div id="comfort-screen" class="hidden fade-in">
+      <img id="pokemon-img" src="" alt="Animated Pixel Pokémon" class="pokemon-avatar">
+      <div id="quote-box">
+        <div id="quote-text">Here's something positive for you...</div>
+        <div id="pokemon-attribution" class="pokemon-name"></div>
+      </div>
+      
+      <div class="action-buttons">
+        <button onclick="newQuote()" class="button-primary">Another Friend</button>
+        <button onclick="petPokemon()" id="pet-button" class="button-secondary">Pet Pokémon</button>
+        <button onclick="goBack()">Back</button>
+      </div>
+    </div>
+
+    <div id="thanks-screen" class="hidden fade-in">
+      <h2>That's okay! 💖</h2>
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/175.gif" 
+           alt="Togepi" class="pokemon-avatar">
+      <p class="intro-text">Remember you can come back anytime for some Pokémon encouragement!</p>
+      <button onclick="goBack()" class="button-primary">Back to Start</button>
+    </div>
+  </div>
+
+  <script>
+    const quotePairs = [
+      { id: 25, name: "Pikachu", quote: "You light up more lives than you know! Your energy can brighten even the darkest days ⚡" },
+      { id: 133, name: "Eevee", quote: "It's okay to not have it all figured out. Your potential has many beautiful evolutions ahead 💫" },
+      { id: 173, name: "Cleffa", quote: "Even tiny stars shine bright in the night sky. Your presence matters more than you realize 🌟" },
+      { id: 39, name: "Jigglypuff", quote: "Rest is not weakness — it's magic! Take the time you need to recharge your beautiful melody 🎵" },
+      { id: 35, name: "Clefairy", quote: "Let your weird shine, it's wonderful! Being uniquely you is your greatest strength ✨" },
+      { id: 300, name: "Skitty", quote: "Joy comes from the smallest things. Remember to pause and play sometimes 🐾" },
+      { id: 172, name: "Pichu", quote: "Your smile is powerful, even on quiet days. You're growing stronger with each challenge 😊" },
+      { id: 37, name: "Vulpix", quote: "Warmth comes from within. Your inner fire can never truly be extinguished 🔥" },
+      { id: 175, name: "Togepi", quote: "Happiness shared is happiness multiplied. Your joy brings hope to others 🥚" },
+      { id: 151, name: "Mew", quote: "You contain infinite possibilities. There's no limit to what you might become ✨" },
+      { id: 54, name: "Psyduck", quote: "It's okay to feel overwhelmed sometimes. Even through headaches, you have hidden powers 💧" },
+      { id: 143, name: "Snorlax", quote: "Taking care of yourself is not laziness - it's necessary. Rest when you need it 💤" }
+    ];
+
+    // Initialize mood slider
+    const moodSlider = document.getElementById('mood-slider');
+    const moodEmoji = document.getElementById('mood-emoji');
+    const emojis = ['😢', '😔', '😐', '🙂', '😊'];
+    
+    moodSlider.addEventListener('input', function() {
+      moodEmoji.textContent = emojis[this.value - 1];
+      const scale = 1 + (this.value - 1) * 0.1;
+      moodEmoji.style.transform = `scale(${scale})`;
+    });
+
+    function showComfort() {
+      hideAll();
+      document.getElementById('comfort-screen').classList.remove('hidden');
+      newQuote();
+      createHearts();
+    }
+
+    function showThanks() {
+      hideAll();
+      document.getElementById('thanks-screen').classList.remove('hidden');
+    }
+
+    function newQuote() {
+      const random = quotePairs[Math.floor(Math.random() * quotePairs.length)];
+      document.getElementById('quote-text').textContent = random.quote;
+      document.getElementById('pokemon-attribution').textContent = `— ${random.name}`;
+      
+      // Change Pokemon image with fade effect
+      const img = document.getElementById('pokemon-img');
+      img.style.opacity = '0';
+      
+      setTimeout(() => {
+        img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${random.id}.gif`;
+        img.style.opacity = '1';
+      }, 300);
+    }
+
+    function goBack() {
+      hideAll();
+      document.getElementById('start-screen').classList.remove('hidden');
+    }
+
+    function hideAll() {
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('comfort-screen').classList.add('hidden');
+      document.getElementById('thanks-screen').classList.add('hidden');
+    }
+
+    function createHearts() {
+      const container = document.getElementById('hearts-container');
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 10; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div');
+          heart.className = 'heart';
+          heart.style.left = `${10 + Math.random() * 80}%`;
+          heart.style.animationDelay = `${Math.random() * 2}s`;
+          container.appendChild(heart);
+          
+          setTimeout(() => {
+            heart.remove();
+          }, 4000);
+        }, i * 300);
+      }
+    }
+
+    function petPokemon() {
+      const img = document.getElementById('pokemon-img');
+      const rect = img.getBoundingClientRect();
+      const petAnimation = document.getElementById('pet-animation');
+      
+      petAnimation.style.left = `${rect.left + rect.width/2 - 25}px`;
+      petAnimation.style.top = `${rect.top + rect.height/2 - 25}px`;
+      petAnimation.style.opacity = '1';
+      
+      // Create sparkles
+      for (let i = 0; i < 5; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = `${rect.left + Math.random() * rect.width}px`;
+        sparkle.style.top = `${rect.top + Math.random() * rect.height}px`;
+        document.body.appendChild(sparkle);
+        
+        // Animate sparkle
+        setTimeout(() => {
+          sparkle.style.opacity = '1';
+          sparkle.style.transform = `scale(${1 + Math.random() * 2})`;
+          sparkle.style.transition = 'all 0.5s ease-out';
+          
+          setTimeout(() => {
+            sparkle.style.opacity = '0';
+            setTimeout(() => sparkle.remove(), 500);
+          }, 400);
+        }, i * 100);
+      }
+      
+      // Wiggle pokemon
+      img.style.transform = 'scale(1.15) rotate(-5deg)';
+      setTimeout(() => {
+        img.style.transform = 'scale(1.15) rotate(5deg)';
+        setTimeout(() => {
+          img.style.transform = '';
+        }, 150);
+      }, 150);
+      
+      setTimeout(() => {
+        petAnimation.style.opacity = '0';
+      }, 500);
+    }
+
+    // Initialize
+    window.onload = function() {
+      // Type writer effect for welcome message
+      const welcomeMsg = document.getElementById('welcome-message');
+      welcomeMsg.style.opacity = '1';
+    }
+  </script>
+</body>
+</html>
